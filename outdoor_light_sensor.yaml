@@ -1,0 +1,97 @@
+esphome:
+  name: outdoor-light-sensor
+  friendly_name: Outdoor Light Sensor
+
+esp32:
+  board: esp32-s3-devkitc-1
+  framework:
+    type: arduino
+
+# 1. 替换为您自己的Wi-Fi信息
+wifi:
+  ssid: "YOUR_WIFI_SSID"
+  password: "YOUR_WIFI_PASSWORD"
+
+# 启用日志，方便通过IP地址或USB查看设备状态
+logger:
+
+# 启用Home Assistant API，用于数据通信
+api:
+
+# 启用网页服务器，方便在浏览器中查看设备信息
+web_server:
+  port: 80
+
+# 启用OTA空中升级功能
+ota:
+
+# 定义I2C总线，用于连接传感器
+i2c:
+  sda: GPIO8 # I2C数据线连接的引脚
+  scl: GPIO9 # I2C时钟线连接的引脚
+  scan: true   # 启动时扫描总线以确认设备连接（地址应为0x39）
+  id: i2c_bus1 # 为I2C总线指定一个ID
+
+# 传感器核心配置
+sensor:
+  - platform: as7341
+    id: as7341_sensor
+    i2c_id: i2c_bus1 # 指定使用上面定义的I2C总线
+
+    # 更新间隔：每20秒读取一次传感器
+    update_interval: 20s
+
+    # ATIME和ASTEP共同决定积分时间（曝光时长）。
+    # 积分时间 (秒) ≈ (ATIME + 1) * (ASTEP + 1) * 2.78µs
+    # 这个设置在大多数情况下表现良好。
+    atime: 100 
+    astep: 999
+    
+    # 增益设置。数值越大，对弱光越敏感，但也更容易在强光下饱和。128x是一个很好的起点。
+    # 可选值: 0.5x, 1x, 2x, 4x, 8x, 16x, 32x, 64x, 128x, 256x, 512x
+    gain: 128x
+
+    # --- 主要输出：项目最核心的两个传感器 ---
+    
+    # 照度传感器 (单位: Lux)
+    illuminance:
+      name: "Outside Illuminance"
+      friendly_name: "室外照度"
+      # 使用中位数滤波器平滑数据，去除因云层、飞鸟等造成的瞬间跳变
+      filters:
+        - median:
+            window_size: 5 # 采集5个样本
+            send_every: 5  # 每采集5个样本后，发送一次中位数值
+
+    # 色温传感器 (单位: K)
+    color_temperature:
+      name: "Outside Color Temperature"
+      friendly_name: "室外色温"
+      # 同样使用中位数滤波器平滑数据
+      filters:
+        - median:
+            window_size: 5
+            send_every: 5
+          
+    # --- 可选：原始光谱通道数据 ---
+    # 如果需要进行更深入的光谱分析，可以取消下面的注释
+    # F1:
+    #   name: "AS7341 F1 415nm"
+    # F2:
+    #   name: "AS7341 F2 445nm"
+    # F3:
+    #   name: "AS7341 F3 480nm"
+    # F4:
+    #   name: "AS7341 F4 515nm"
+    # F5:
+    #   name: "AS7341 F5 555nm"
+    # F6:
+    #   name: "AS7341 F6 590nm"
+    # F7:
+    #   name: "AS7341 F7 630nm"
+    # F8:
+    #   name: "AS7341 F8 680nm"
+    # clear:
+    #   name: "AS7341 Clear"
+    # nir:
+    #   name: "AS7341 NIR"
