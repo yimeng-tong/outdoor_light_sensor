@@ -34,16 +34,13 @@
 
 ### 第一步：配置ESPHome传感器固件
 
+如果对esphome配置存在疑惑，可以参考B站相关视频
+
 1.  在Home Assistant中安装并打开ESPHome插件。
 2.  创建一个新的设备，并将下面提供的 `esphome.yaml` 内容粘贴进去。
 3.  **重要**: 修改 `wifi:` 部分，填入您自己的Wi-Fi SSID和密码。
 4.  保存配置，并首次通过USB将固件“安装”到您的ESP32开发板上。
 
-**`esphome.yaml` 完整配置:**
-
-```yaml
-# 在这里粘贴上面提供的 outdoor_light_sensor.yaml 的完整内容
-```
 
 ### 第二步：配置Home Assistant集成
 
@@ -70,6 +67,7 @@
 为了让早晨的光线更清爽、傍晚的光线更温馨，我们可以创建一个模板传感器来对室外色温进行非线性映射。
 
 1.  将以下代码添加到您的Home Assistant `configuration.yaml` 文件中：
+```
     template:
       - sensor:
           - name: "Adjusted Outside Color Temperature"
@@ -104,7 +102,8 @@
               {% set final_temp = [indoor_min, indoor_temp, indoor_max] | sort | last %}
               {% set final_temp = [indoor_min, final_temp, indoor_max] | sort | first %}
               {{ final_temp | round(0) }}
-    ```
+```
 
-2.  在开发者工具中重新加载模板实体。
-3.  **返回Adaptive Lighting的配置**，将 `Color Temperature Sensor` 更改为新建的 `sensor.adjusted_outside_color_temperature`。
+3.  在开发者工具中重新加载模板实体。
+4.  **返回Adaptive Lighting的配置**，将 `Color Temperature Sensor` 更改为新建的 `sensor.adjusted_outside_color_temperature`。
+
