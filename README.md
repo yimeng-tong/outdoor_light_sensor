@@ -1,0 +1,2 @@
+# outdoor_light_sensor
+结合ESP32和AS7341光谱传感器，构建一个高精度的室外环境光监测站，并与Home Assistant联动
